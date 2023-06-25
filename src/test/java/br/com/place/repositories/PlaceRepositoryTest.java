@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,42 @@ class PlaceRepositoryTest {
 		// Then
 		assertNotNull(findById);
 		assertEquals(place.getId(), findById.getId());
+
+	}
+
+	@Test
+	@DisplayName("Given Place Object when Delete then Remove Place")
+	public void testGivenPlaceObject_whenDeleteById_thenRemovePlaceObject() {
+		// Given
+		Place place = Place.builder().name("teste").slug("teste").city("teste").state("teste").build();
+		placeRepository.save(place);
+		// When
+		placeRepository.deleteById(place.getId());
+		Optional<Place> placeOptional = placeRepository.findById(place.getId());
+		// Then
+		assertTrue(placeOptional.isEmpty());
+
+	}
+
+	@Test
+	@DisplayName("Given Place Object when Update Place then Return Updated Place Object")
+	public void testGivenPlaceObject_whenUpdatePlace_thenReturnUpdatedPlaceObject() {
+		// Given
+		Place place = Place.builder().name("test").slug("test").city("test").state("test").build();
+		placeRepository.save(place);
+		// When
+		Place findById = placeRepository.findById(place.getId()).get();
+		findById.setName("updated object");
+		findById.setSlug("updated object");
+		findById.setCity("updated object");
+		findById.setState("updated object");
+		Place updatedPlace = placeRepository.save(findById);
+		// Then
+		assertNotNull(updatedPlace);
+		assertEquals("updated object", updatedPlace.getName());
+		assertEquals("updated object", updatedPlace.getSlug());
+		assertEquals("updated object", updatedPlace.getCity());
+		assertEquals("updated object", updatedPlace.getState());
 
 	}
 
