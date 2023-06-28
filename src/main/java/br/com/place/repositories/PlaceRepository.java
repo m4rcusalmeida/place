@@ -10,4 +10,5 @@ import br.com.place.models.Place;
 @Repository
 public interface PlaceRepository extends JpaRepository<Place, Long> {
 	List<Place> findByNameContainingIgnoreCase(String keyword);
+
 }
