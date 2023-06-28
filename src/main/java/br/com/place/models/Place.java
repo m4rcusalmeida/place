@@ -1,5 +1,7 @@
 package br.com.place.models;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "place")
@@ -19,7 +22,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-public class Place extends Auditing {
+@ToString
+public class Place extends Auditing implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@EqualsAndHashCode.Include
