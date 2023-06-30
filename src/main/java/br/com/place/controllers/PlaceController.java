@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.place.dtos.PlaceRequest;
 import br.com.place.dtos.PlaceResponse;
+import br.com.place.hateoas.PlaceAssembler;
 import br.com.place.services.PlaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,50 +34,34 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 public class PlaceController {
 
 	private final PlaceService placeService;
+	private final PlaceAssembler placeAssembler;
 
 	@PostMapping
 	public ResponseEntity<EntityModel<PlaceResponse>> save(@RequestBody @Valid PlaceRequest placeRequest) {
-		PlaceResponse placeResponse = placeService.save(placeRequest);
-		Link selfLink = WebMvcLinkBuilder.linkTo(PlaceController.class).slash(placeResponse.getId()).withSelfRel();
-		EntityModel<PlaceResponse> model = EntityModel.of(placeResponse, selfLink);
-		return ResponseEntity.ok(model);
+		return ResponseEntity.ok(placeAssembler.toModel(placeService.save(placeRequest)));
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<EntityModel<PlaceResponse>> update(@PathVariable Long id,
 			@RequestBody @Valid PlaceRequest placeRequest) {
-		PlaceResponse updatedResponse = placeService.update(id, placeRequest);
-		Link selfLink = WebMvcLinkBuilder.linkTo(PlaceController.class).slash(updatedResponse.getId()).withSelfRel();
-		EntityModel<PlaceResponse> model = EntityModel.of(updatedResponse, selfLink);
-		return ResponseEntity.ok(model);
+		return ResponseEntity.ok(placeAssembler.toModel(placeService.update(id, placeRequest)));
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<EntityModel<PlaceResponse>> getPlaceById(@PathVariable Long id) {
-		PlaceResponse placeResponse = placeService.findById(id);
-		Link selfLink = WebMvcLinkBuilder.linkTo(PlaceController.class).slash(placeResponse.getId()).withSelfRel();
-		EntityModel<PlaceResponse> model = EntityModel.of(placeResponse, selfLink);
-		return ResponseEntity.status(HttpStatus.FOUND).body(model);
+		return ResponseEntity.status(HttpStatus.FOUND).body(placeAssembler.toModel(placeService.findById(id)));
 	}
 
 	@GetMapping
 	public ResponseEntity<CollectionModel<EntityModel<PlaceResponse>>> getAllPlace(
-			@RequestParam(name = "q", required = false) String q) {
+			@RequestParam(name = "name", required = false) String name) {
 		List<PlaceResponse> places;
-		if (Objects.nonNull(q)) {
-			places = placeService.findByName(q);
+		if (Objects.nonNull(name)) {
+			places = placeService.findByName(name);
 		} else {
 			places = placeService.findAll();
 		}
-		Link selfLink = WebMvcLinkBuilder.linkTo(PlaceController.class).withSelfRel();
-		List<EntityModel<PlaceResponse>> placeResources = places.stream()
-				.map(place -> EntityModel.of(place,
-						WebMvcLinkBuilder
-								.linkTo(WebMvcLinkBuilder.methodOn(PlaceController.class).getPlaceById(place.getId()))
-								.withSelfRel()))
-				.collect(Collectors.toList());
-		CollectionModel<EntityModel<PlaceResponse>> collectionModel = CollectionModel.of(placeResources, selfLink);
-		return ResponseEntity.status(HttpStatus.FOUND).body(collectionModel);
+		return ResponseEntity.status(HttpStatus.FOUND).body(placeAssembler.toCollectionModel(places));
 	}
 
 	@DeleteMapping("/{id}")

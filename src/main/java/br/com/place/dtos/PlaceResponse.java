@@ -2,6 +2,8 @@ package br.com.place.dtos;
 
 import java.time.LocalDateTime;
 
+import org.springframework.hateoas.server.core.Relation;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +17,7 @@ import lombok.ToString;
 @Builder
 @EqualsAndHashCode
 @ToString
+@Relation(collectionRelation = "places")
 public class PlaceResponse {
 	private Long id;
 	private String name;
