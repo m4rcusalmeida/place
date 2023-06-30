@@ -6,6 +6,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,18 +42,24 @@ class PlaceServiceImplTest {
 	@InjectMocks
 	private PlaceServiceImpl placeService;
 
+	private LocalDateTime now;
+
 	@BeforeEach
 	public void setup() {
 		MockitoAnnotations.openMocks(this);
 		placeService = new PlaceServiceImpl(placeRepository, placeMapper);
+		now = LocalDateTime.now();
 	}
 
 	@Test
 	@DisplayName("Test for Given Place Object when Save Place then Return Place Object")
 	public void testGivenPlaceObject_WhenSavePlace_thenReturnPlaceObject() {
 		// Given
-		PlaceRequest placeRequest = new PlaceRequest();
-		given(placeMapper.toPlace(any(PlaceRequest.class))).willReturn(new Place());
+		PlaceRequest placeRequest = PlaceRequest.builder().name("test").slug("test").city("test").state("test").build();
+		Place place = Place.builder().id(1L).name("test").slug("test").city("test").state("test").build();
+		place.setCreatedAt(now);
+		place.setUpdatedAt(now);
+		given(placeMapper.toPlace(placeRequest)).willReturn(place);
 		given(placeRepository.save(any(Place.class))).willReturn(new Place());
 		given(placeMapper.toPlaceResponse(any(Place.class))).willReturn(new PlaceResponse());
 		// When
@@ -61,6 +68,12 @@ class PlaceServiceImplTest {
 		verify(placeMapper, times(1)).toPlace(any(PlaceRequest.class));
 		verify(placeRepository, times(1)).save(any(Place.class));
 		verify(placeMapper, times(1)).toPlaceResponse(any(Place.class));
+		Assertions.assertEquals(placeRequest.getName(), place.getName());
+		Assertions.assertEquals(placeRequest.getSlug(), place.getName());
+		Assertions.assertEquals(placeRequest.getCity(), place.getName());
+		Assertions.assertEquals(placeRequest.getState(), place.getName());
+		Assertions.assertEquals(now, place.getCreatedAt());
+		Assertions.assertEquals(now, place.getUpdatedAt());
 
 	}
 
@@ -70,7 +83,7 @@ class PlaceServiceImplTest {
 		// Given
 		Long id = 1L;
 		PlaceResponse placeResponse = PlaceResponse.builder().id(1L).name("teste").slug("teste").city("teste")
-				.state("teste").build();
+				.state("teste").createdAt(now).updatedAt(now).build();
 		Place place = new Place();
 		BeanUtils.copyProperties(placeResponse, place);
 		place.setId(1L);
